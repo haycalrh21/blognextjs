@@ -1,108 +1,107 @@
+// Di BlogSlug
 import React, { useState, useEffect } from "react";
 import remarkParse from "remark-parse";
 import remarkHtml from "remark-html";
 import { unified } from "unified";
 import { useSession } from "next-auth/react";
-import newComment from "@/services/blog/comment";
 import { addKomen } from "@/services/blog/services";
-import axios from "axios";
 import { useRouter } from "next/router";
+import CardComment from "@/components/ui/cardcomment";
+import axios from "axios";
 
 const BlogSlug = ({ slug }) => {
   const [isiHTML, setIsiHTML] = useState(null);
-
   const session = useSession();
-  const router = useRouter()
+  const router = useRouter();
+  const [user, setUser] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const [berhasil, setBerhasil] = useState(false);
-  const [pesanerror, setPesanError] = useState("");
-  const [user,setUser] = useState("")
-
-  const [loading, setLoading] = useState(false); 
-
-  const[komen,setKomen] = useState([])
-  const [comments, setComments] = useState([]);
   const [formData, setFormData] = useState({
-   
-  comment:"",
+    comment: "",
   });
+  const [komenState, setKomenState] = useState([]); // Ubah nama state menjadi "komenState"
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: value
+      [name]: value,
     });
   };
 
-  useEffect(() => {
-	const getKomen = async () => {
-	  try {
-		const response = await axios.get("/api/comment");
-		if (response.data && response.data.data) {
-		  // Filter komentar berdasarkan blogId yang sesuai
-		  const filteredComments = response.data.data.filter(comment => comment.blogId === slug.id);
-		  setKomen(filteredComments);
-		//   console.log(filteredComments);
-		}
-	  } catch (error) {
-		console.error("Error fetching comments:", error);
-	  }
-	};
-  
-	getKomen();
-  }, [slug]);
-  
   const handleSubmit = async (e) => {
-	e.preventDefault();
-	setLoading(true);
-	try {
-	  const commentData = {
-		...formData,
-		user: user,
-		blogId: slug.id
-	  };
-	  const response = await addKomen(commentData);
-	  if (response.data) {
-		setComments([...comments, response.data]); // Menambahkan komentar baru ke dalam state comments
-		setFormData({ comment: "" });
-		setPesanError("");
-		setBerhasil(true);
-	  } else {
-		setPesanError("Komentar sudah ada.");
-	  }
-	  setLoading(false);
-	} catch (error) {
-	  setPesanError("Terjadi kesalahan saat menambahkan komentar.");
-	  setLoading(false);
-	}
-  };
-  useEffect(() => {
-    const convertMarkdownToHtml = async () => {
-      if (!slug) return;
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const commentData = {
+        ...formData,
+        user: user,
+        blogId: slug.id,
+      };
+      const response = await addKomen(commentData);
+      if (response.data) {
+        setLoading(false);
+        setFormData({ comment: "" });
 
-      const { isi } = slug;
-      const processedContent = await unified()
-        .use(remarkParse)
-        .use(remarkHtml)
-        .process(isi);
-      const htmlString = processedContent.toString();
-      setIsiHTML(htmlString);
-    };
-
-    convertMarkdownToHtml();
-  }, [slug]);
-
-  useEffect(() => {
-	if (session.data) {
-	  setUser(session.data?.user.fullname || '');
-	}	
-  }, [session.data, komen]); // Tambahkan komen ke dalam dependency array
+        // Memperbarui state komenState dengan komentar yang baru ditambahkan
   
+      } else {
+        // Tangani kesalahan jika respons tidak mengandung data yang diharapkan
+      }
+    } catch (error) {
+      // Tangani kesalahan dari penambahan komentar
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateKomenState = async () => {
+    try {
+      const response = await axios.get("/api/comment");
+      if (response.data && response.data.data) {
+        const filteredComments = response.data.data.filter(
+          comment => comment.blogId === slug.id
+        );
+        setKomenState(filteredComments);
+      }
+    } catch (error) {
+      console.error("Error fetching comments:", error);
+    }
+  };
+
+  useEffect(
+    () => {
+   
+      if (session.data) {
+        setUser(session.data?.user.fullname || "");
+      };
+      const convertMarkdownToHtml = async () => {
+        if (!slug) return;
+
+        const { isi } = slug;
+        const processedContent = await unified()
+          .use(remarkParse)
+          .use(remarkHtml)
+          .process(isi);
+        const htmlString = processedContent.toString();
+        setIsiHTML(htmlString);
+      };
+
+      convertMarkdownToHtml();
+
+      updateKomenState()
+        const intervalId = setInterval(updateKomenState, 5000); // Panggil updateKomenState setiap 5 detik
+  return () => clearInterval(intervalId); 
+    },
+    [session.data, slug]
+  );
 
   if (!slug) {
     return <div>Loading...</div>;
   }
+
+
 
   const { judul, isPremium, isPublish, image, author } = slug;
 
@@ -145,31 +144,7 @@ const BlogSlug = ({ slug }) => {
               />
             )}
           </div>
-		  <div>
-			
-		  <div className="w-full">
-			<hr className="my-4"/>
-  <h1 className="text-black text-xl font-semibold mb-4">Komentar</h1>
-  {komen.length > 0 ? (
-    <ul className="w-full">
-      {/* Lakukan mapping data komentar ke dalam elemen-elemen JSX */}
-      {komen.map((comment) => (
-        <li key={comment.id} className="w-full border-b border-gray-200 py-4">
-          {/* Tampilkan data komentar sesuai kebutuhan */}
-          <p className="text-black font-medium mb-2"> {comment.user}</p>
-          <p className="text-black">{comment.comment}</p>
          
-        </li>
-      ))}
-    </ul>
-  ) : (
-    <p className="text-black">Tidak ada komentar.</p>
-  )}
-</div>
-
-
-		  </div>
-
           <div>
             <form onSubmit={handleSubmit} className="max-w-lg mx-auto">
               <label>Comment</label>
@@ -184,11 +159,19 @@ const BlogSlug = ({ slug }) => {
               {!session || session.status === "unauthenticated" ? (
                 <p className="text-red-500">Silahkan login terlebih dahulu</p>
               ) : (
-                <button className="bg-red-500 rounded-md px-4 py-2 mt-4 hover:bg-red-600 text-white">
-                  Submit
-                </button>
+                <>
+
+                  <button className="bg-red-500 rounded-md px-4 py-2 mt-4 hover:bg-red-600 text-white">{loading ? "loading" : "Submit"}
+
+                  </button>
+                </>
+
               )}
             </form>
+          </div>
+          <div>
+            <CardComment komenState={komenState} />
+
           </div>
         </div>
       );
