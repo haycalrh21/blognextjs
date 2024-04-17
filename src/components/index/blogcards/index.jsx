@@ -47,9 +47,9 @@ const BlogCards = () => {
 	const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
 	return (
-		<div className='relative'>
-			<div className='grid grid-cols-1 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-1 gap-4 m-4 w-full' style={{ alignContent: 'flex-start', justifyContent: 'flex-start', gridAutoFlow: 'dense' }}>
-
+		<div className=''>
+			<div className='grid grid-cols-1 col-start-1 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-1 gap-4 m-4 w-full'
+   >
 				{!loaded ? (
 					<>
 						{currentPosts.map((blog) => (
@@ -76,7 +76,7 @@ const BlogCards = () => {
 								<img
 									alt={blog.judul}
 									src={blog.image}
-									className={`h-64 object-center`}
+									className={`h-64 w-full object-fit`}
 								/>
 								</div>
 							

@@ -6,7 +6,7 @@ export default function Home() {
     const data = useSession();
 
     return (
-        <div className='flex min-h-screen flex-col justify-between p-10'>
+        <div className='flex flex-col justify-between p-10'>
             <h1 className="text-3xl font-bold text-left italic">Welcome To Blog Firebase</h1>
             <BlogCards />
         </div>

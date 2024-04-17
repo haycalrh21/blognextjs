@@ -1,10 +1,15 @@
 import { uploadFile } from "@/lib/firebase/services";
-import React, { useState } from "react";
+import { useSession } from "next-auth/react";
+import React, { useEffect, useState } from "react";
 
 const Modal = (props) => {
+
+	const session = useSession()
+	console.log(session)
 	const { isOpen, onClose, onSubmit, blogId } = props;
 	const [judul, setJudul] = useState("");
 	const [isi, setIsi] = useState("");
+	const [author, setAuthor] = useState("");
 	const [isPublish, setIsPublish] = useState(false);
 	const [isPremium, setIsPremium] = useState(false);
 	const [image, setImage] = useState(null);
@@ -16,6 +21,10 @@ const Modal = (props) => {
 	const handleChangeIsi = (event) => {
 		setIsi(event.target.value);
 	};
+
+	const handleChangeAuthor =(event)=>{
+		setAuthor(event.target.value)
+	}
 
 	const handleChangePublish = (event) => {
 		setIsPublish(event.target.checked);
@@ -42,18 +51,35 @@ const Modal = (props) => {
 
 		try {
 			const downloadURL = await uploadFile(image, blogId); // Menggunakan blogId dalam pemanggilan fungsi uploadFile
-			onSubmit({ judul, isi, isPublish, isPremium, image: downloadURL });
+			onSubmit({ judul, isi,author, isPublish, isPremium, image: downloadURL });
 		} catch (error) {
 			console.error("Error uploading image:", error);
 		}
 	};
-
+    useEffect(() => {
+        if (session.data) {
+            setAuthor(session.data.user?.fullname || ""); // Mengatur nilai author saat komponen dimuat
+        }
+    }, [session.data]);
 	return (
 		<>
 			{isOpen && (
 				<div className='fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex justify-center items-center z-50'>
 					<div className='bg-white p-6 rounded-lg shadow-lg'>
 						<form onSubmit={handleSubmit} className='max-w-lg mx-auto'>
+						<div className='mb-4'>
+								<label htmlFor='author' className='block text-gray-700'>
+									Author:
+								</label>
+								<input
+									type='text'
+									name='author'
+									id='author'
+									value={author}
+									onChange={handleChangeAuthor}
+									className='w-full px-4 py-2 border rounded-md focus:outline-none focus:border-blue-500'
+								/>
+							</div>
 							<div className='mb-4'>
 								<label htmlFor='judul' className='block text-gray-700'>
 									Judul:
