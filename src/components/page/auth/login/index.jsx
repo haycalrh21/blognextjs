@@ -28,7 +28,7 @@ const FormLogin = () => {
 			setIsLoading(false);
 
 
-			// setPesanError("kayanya ada yg salah tuh ")
+			
 
 			if (!res?.error) {
 				push(callbackUrl);
@@ -74,13 +74,18 @@ useEffect(()=>{
 							{isLoading ? "Logging in..." : "Login"}
 						</Button>
 						<button
-							type='button'
-							onClick={() => signIn("google", { callbackUrl, redirect: false })}
-							className='bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 flex items-center justify-center'
-						>
-							<BsGoogle className='w-5 h-4 mr-3' />
-							Google
-						</button>
+    type='button'
+    onClick={() => signIn("google", { callbackUrl, redirect: false })}
+    className='bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 flex items-center justify-center'
+    disabled
+    style={{ cursor: 'not-allowed' }} // Menambahkan style untuk mengubah kursor
+>
+    <BsGoogle className='w-5 h-4 mr-3' />
+    Google
+</button>
+
+						<label className="text-red-500">*Login google sedang tidak bisa</label>
+
 					</div>
 				</form>
 			</div>

@@ -8,6 +8,9 @@ import bcrypt from "bcrypt";
 export async function signUp(userData, callback) {
 	const data = await retrieveDataByField("users", "email", userData.email);
 
+	if(userData.password.length<6){
+		callback(false);
+	}
 	if (data.length > 0) {
 		callback(true);
 	} else {

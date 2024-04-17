@@ -21,8 +21,8 @@ const FormRegister = () => {
 			
 			password: form.password.value,
 		};
-		if(data.password.length<1){
-			setErrorMessage("Passwordnya harus lebih dari 6 ya gan ");
+		if(data.password.length<6){
+			setErrorMessage("Passwordnya harus lebih dari 6 ya  ");
 			return;
 		}
 		try {
